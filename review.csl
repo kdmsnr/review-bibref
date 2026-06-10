@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8"?>
+<style xmlns="http://purl.org/net/xbiblio/csl" class="in-text" version="1.0" demote-non-dropping-particle="sort-only">
+  <info>
+    <title>Re:VIEW</title>
+    <id>https://reviewml.org/styles/review</id>
+    <author>
+      <name>Re:VIEW project</name>
+    </author>
+    <category citation-format="author-date"/>
+    <category field="generic-base"/>
+    <updated>2026-06-11T00:00:00+00:00</updated>
+  </info>
+
+  <macro name="author">
+    <choose>
+      <if variable="language">
+        <names variable="author">
+          <name initialize="false" name-as-sort-order="all" delimiter="・"/>
+          <substitute>
+            <names variable="editor"/>
+            <text variable="title"/>
+          </substitute>
+        </names>
+      </if>
+      <else>
+        <names variable="author">
+          <name initialize="false" name-as-sort-order="all" and="text" delimiter=", "/>
+          <substitute>
+            <names variable="editor"/>
+            <text variable="title"/>
+          </substitute>
+        </names>
+      </else>
+    </choose>
+  </macro>
+
+  <macro name="author-short">
+    <choose>
+      <if variable="language">
+        <names variable="author">
+          <name form="short" delimiter="・"/>
+          <substitute>
+            <names variable="editor"/>
+            <text variable="title"/>
+          </substitute>
+        </names>
+      </if>
+      <else>
+        <names variable="author">
+          <name form="short" and="text" delimiter=", "/>
+          <substitute>
+            <names variable="editor"/>
+            <text variable="title"/>
+          </substitute>
+        </names>
+      </else>
+    </choose>
+  </macro>
+
+  <macro name="issued-year">
+    <choose>
+      <if variable="issued">
+        <date variable="issued">
+          <date-part name="year"/>
+        </date>
+      </if>
+      <else>
+        <text value="n.d."/>
+      </else>
+    </choose>
+  </macro>
+
+  <macro name="citation-date-locator">
+    <group delimiter=": ">
+      <text macro="issued-year"/>
+      <text variable="locator"/>
+    </group>
+  </macro>
+
+  <macro name="title">
+    <choose>
+      <if type="book" variable="language" match="all">
+        <text variable="title" prefix="『" suffix="』"/>
+      </if>
+      <else-if type="book" match="any">
+        <text variable="title" font-style="italic"/>
+      </else-if>
+      <else-if type="article-journal paper-conference chapter" variable="language" match="all">
+        <text variable="title" prefix="「" suffix="」"/>
+      </else-if>
+      <else-if type="article-journal paper-conference chapter" match="any">
+        <text variable="title"/>
+      </else-if>
+      <else>
+        <text variable="title"/>
+      </else>
+    </choose>
+  </macro>
+
+  <macro name="container-title">
+    <choose>
+      <if variable="container-title language" match="all">
+        <text variable="container-title" prefix="『" suffix="』"/>
+      </if>
+      <else-if variable="container-title">
+        <text variable="container-title" font-style="italic"/>
+      </else-if>
+    </choose>
+  </macro>
+
+  <macro name="translator">
+    <choose>
+      <if variable="language">
+        <names variable="translator">
+          <name initialize="false" name-as-sort-order="all" delimiter="・"/>
+        </names>
+      </if>
+      <else>
+        <names variable="translator">
+          <name initialize="false" and="text" delimiter=", "/>
+        </names>
+      </else>
+    </choose>
+  </macro>
+
+  <macro name="publisher">
+    <group delimiter=", ">
+      <text variable="publisher-place"/>
+      <text variable="publisher"/>
+    </group>
+  </macro>
+
+  <macro name="publisher-ja">
+    <group delimiter="，">
+      <text variable="publisher-place"/>
+      <text variable="publisher"/>
+    </group>
+  </macro>
+
+  <macro name="original-publication">
+    <choose>
+      <if variable="original-title original-date original-publisher" match="any">
+        <group delimiter=", " prefix="(" suffix=")">
+          <group delimiter=": ">
+            <text value="原著"/>
+            <text variable="original-title"/>
+          </group>
+          <date variable="original-date">
+            <date-part name="year"/>
+          </date>
+          <text variable="original-publisher"/>
+        </group>
+      </if>
+    </choose>
+  </macro>
+
+  <macro name="original-publication-ja">
+    <choose>
+      <if variable="original-title original-date original-publisher" match="any">
+        <group delimiter=", ">
+          <group delimiter=": ">
+            <text value="原著"/>
+            <text variable="original-title"/>
+          </group>
+          <date variable="original-date">
+            <date-part name="year"/>
+          </date>
+          <text variable="original-publisher"/>
+        </group>
+      </if>
+    </choose>
+  </macro>
+
+  <macro name="book-details">
+    <group delimiter=". ">
+      <text macro="title"/>
+      <text macro="translator" suffix="訳"/>
+      <text macro="publisher"/>
+      <text macro="original-publication"/>
+    </group>
+  </macro>
+
+  <macro name="japanese-book-entry">
+    <group delimiter="">
+      <group delimiter="" suffix="．">
+        <group delimiter="，">
+          <group delimiter="">
+            <text macro="author"/>
+            <text macro="title"/>
+          </group>
+          <text macro="translator" suffix="訳"/>
+          <text macro="publisher-ja"/>
+        </group>
+        <text macro="issued-year" prefix=" (" suffix=")"/>
+      </group>
+      <text macro="original-publication-ja" suffix="．"/>
+    </group>
+  </macro>
+
+  <macro name="article-details">
+    <group delimiter=". ">
+      <text macro="title"/>
+      <group delimiter=", ">
+        <text macro="container-title"/>
+        <text variable="volume"/>
+        <text variable="issue" prefix="(" suffix=")"/>
+        <text variable="page"/>
+      </group>
+    </group>
+  </macro>
+
+  <macro name="japanese-article-details">
+    <group delimiter="，">
+      <text macro="title"/>
+      <text macro="container-title"/>
+      <text variable="volume"/>
+      <text variable="issue" prefix="(" suffix=")"/>
+      <text variable="page"/>
+    </group>
+  </macro>
+
+  <macro name="japanese-article-entry">
+    <group delimiter="" suffix="．">
+      <group delimiter=" ">
+        <text macro="author"/>
+        <text macro="issued-year" prefix="(" suffix=")"/>
+      </group>
+      <text macro="japanese-article-details"/>
+    </group>
+  </macro>
+
+  <macro name="report-thesis-details">
+    <group delimiter=". ">
+      <text macro="title" font-style="italic"/>
+      <text variable="genre"/>
+      <text macro="publisher"/>
+      <text variable="number"/>
+    </group>
+  </macro>
+
+  <macro name="standalone-title-ja">
+    <text variable="title" prefix="『" suffix="』"/>
+  </macro>
+
+  <macro name="japanese-report-thesis-entry">
+    <group delimiter="" suffix="．">
+      <group delimiter=" ">
+        <text macro="author"/>
+        <text macro="issued-year" prefix="(" suffix=")"/>
+      </group>
+      <group delimiter="，">
+        <text macro="standalone-title-ja"/>
+        <text variable="genre"/>
+        <text macro="publisher-ja"/>
+        <text variable="number"/>
+      </group>
+    </group>
+  </macro>
+
+  <citation et-al-min="4" et-al-use-first="1" disambiguate-add-year-suffix="true" collapse="year">
+    <layout prefix="(" suffix=")" delimiter="; ">
+      <group delimiter=" ">
+        <text macro="author-short"/>
+        <text macro="citation-date-locator"/>
+      </group>
+    </layout>
+  </citation>
+
+  <bibliography hanging-indent="true" entry-spacing="0">
+    <sort>
+      <key macro="author"/>
+      <key variable="issued"/>
+      <key variable="title"/>
+    </sort>
+    <layout>
+      <choose>
+        <if type="book" variable="language" match="all">
+          <text macro="japanese-book-entry"/>
+        </if>
+        <else-if type="article-journal paper-conference chapter" variable="language" match="all">
+          <text macro="japanese-article-entry"/>
+        </else-if>
+        <else-if type="report thesis" variable="language" match="all">
+          <text macro="japanese-report-thesis-entry"/>
+        </else-if>
+        <else>
+          <group delimiter=". " suffix=".">
+            <group delimiter=" ">
+              <text macro="author"/>
+              <text macro="issued-year" prefix="(" suffix=")"/>
+            </group>
+            <choose>
+              <if type="book" match="any">
+                <text macro="book-details"/>
+              </if>
+              <else-if type="article-journal paper-conference chapter" match="any">
+                <text macro="article-details"/>
+              </else-if>
+              <else-if type="report thesis" match="any">
+                <text macro="report-thesis-details"/>
+              </else-if>
+              <else>
+                <text macro="title"/>
+              </else>
+            </choose>
+          </group>
+        </else>
+      </choose>
+    </layout>
+  </bibliography>
+</style>

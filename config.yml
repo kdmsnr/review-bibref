@@ -1,0 +1,17 @@
+review_version: 5.0
+
+bookname: review-bibtex-sample
+booktitle: Re:VIEW BibTeX 拡張サンプル
+language: ja
+aut: ["Re:VIEW BibTeX sample"]
+date: 2026-06-11
+
+htmlext: html
+stylesheet: ["style.css"]
+
+texstyle: ["reviewmacro"]
+
+bibtex:
+  files:
+    - references.bib
+  style: review.csl
