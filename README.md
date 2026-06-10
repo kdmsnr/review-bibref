@@ -30,6 +30,18 @@ review-compile --target latex --directory .
 
 生成結果は、このディレクトリの `ch01.tex`、`ch02.tex`、`refs.tex` に出力されます。
 
+## テストを実行する
+
+```sh
+ruby test/test_sample.rb
+```
+
+`review-compile` が `PATH` にない場合は、`REVIEW_COMPILE` で実行コマンドを指定します。
+
+```sh
+REVIEW_COMPILE='ruby -I /path/to/review/lib /path/to/review/bin/review-compile' ruby test/test_sample.rb
+```
+
 ## サンプルの構成
 
 - `ch01.re`: 基本的な文献参照のサンプルです。単著・複数著者の末尾引用と文中引用を含み、章単位の `//biblist[ch01]` を出力します。
