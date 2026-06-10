@@ -1,6 +1,6 @@
-# Re:VIEW BibTeX 拡張サンプル
+# Re:VIEW BibLaTeX 拡張サンプル
 
-このリポジトリは、Re:VIEW プロジェクトに `review-ext.rb` を置いて BibTeX/CSL 参照機能を追加するためのサンプルです。
+このリポジトリは、Re:VIEW プロジェクトに `review-ext.rb` を置いて BibLaTeX/CSL 参照機能を追加するためのサンプルです。
 Re:VIEW 本体を変更せず、プロジェクトローカルの拡張として `@<bibref>`、`@<bibtitle>`、`//biblist` を試せます。
 
 文献データはすべて架空のサンプルです。英語文献と日本語文献、単著と共著、単訳者と複数訳者、`article`、`book`、`incollection`、`inproceedings`、`report`、`thesis` を含めています。
@@ -96,11 +96,11 @@ review-compile --target latex --directory .
 
 それぞれ、翻訳後の書名、原書名、両方を出力します。
 
-## 翻訳書の BibTeX
+## 翻訳書の BibLaTeX
 
 翻訳書は BibLaTeX の標準フィールドで書きます。独自フィールドは使いません。
 
-```bibtex
+```biblatex
 @book{translation2020ja,
   author        = {Harper, Lio},
   title         = {翻訳された架空の都市論},
@@ -118,29 +118,29 @@ review-compile --target latex --directory .
 
 ## 設定
 
-`config.yml` には、BibTeX/CSL の設定例を入れています。
+`config.yml` には、BibLaTeX/CSL の設定例を入れています。
 
 ```yaml
-bibtex:
+biblatex:
   files:
     - references.bib
   style: review.csl
 ```
 
-`files` には読み込む BibTeX ファイルを指定します。`style` には、このプロジェクトから見た CSL ファイルのパスを書きます。
+`files` には読み込む BibLaTeX ファイルを指定します。`style` には、このプロジェクトから見た CSL ファイルのパスを書きます。
 
 このサンプルでは `style.css` も `config.yml` で指定しています。
 
-別の BibTeX ファイルや CSL ファイルを使う場合は、Re:VIEW の設定ファイルに次のように書きます。
+別の BibLaTeX ファイルや CSL ファイルを使う場合は、Re:VIEW の設定ファイルに次のように書きます。
 
 ```yaml
-bibtex:
+biblatex:
   files:
     - my-references.bib
   style: my-style.csl
 ```
 
-`bibtex` 設定を省略した場合でも、`review-ext.rb` はデフォルトで `references.bib` と `review.csl` を使います。
+`biblatex` 設定を省略した場合でも、`review-ext.rb` はデフォルトで `references.bib` と `review.csl` を使います。
 
 ## 主なファイル
 
@@ -148,5 +148,5 @@ bibtex:
 - `review.csl`: デフォルトで使う CSL です。
 - `references.bib`: 架空の BibLaTeX サンプルデータです。
 - `catalog.yml`: `ch01.re`、`ch02.re`、`refs.re` の構成を定義します。
-- `config.yml`: Re:VIEW と BibTeX/CSL の設定例です。
+- `config.yml`: Re:VIEW と BibLaTeX/CSL の設定例です。
 - `style.css`: HTML 表示用の簡単なスタイルです。

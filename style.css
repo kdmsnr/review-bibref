@@ -1,7 +1,7 @@
 body { font-family: sans-serif; line-height: 1.7; margin: 2rem auto; max-width: 48rem; }
-.bibtex-list { margin-top: 1rem; }
-.bibtex-list .csl-entry { clear: both; }
-.bibtex-list .csl-left-margin { float: left; min-width: 2em; padding-right: 0.5em; white-space: nowrap; }
-.bibtex-list .csl-right-inline { margin-left: 2em; padding-left: 0.5em; }
-.bibtex-list .csl-indent { margin-left: 2em; }
-.bibtex-list .hanging-indent .csl-entry { margin-left: 2em; text-indent: -2em; }
+.biblatex-list { margin-top: 1rem; }
+.biblatex-list .csl-entry { clear: both; }
+.biblatex-list .csl-left-margin { float: left; min-width: 2em; padding-right: 0.5em; white-space: nowrap; }
+.biblatex-list .csl-right-inline { margin-left: 2em; padding-left: 0.5em; }
+.biblatex-list .csl-indent { margin-left: 2em; }
+.biblatex-list .hanging-indent .csl-entry { margin-left: 2em; text-indent: -2em; }

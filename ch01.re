@@ -1,4 +1,4 @@
-= BibTeX sample
+= BibLaTeX sample
 
 単一著者の引用（末尾を想定）です@<bibref>{[@brown2022]}。
 

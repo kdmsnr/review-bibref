@@ -13,7 +13,7 @@ ReVIEW::Compiler.definline :bibtitle
 ReVIEW::Compiler.defsingle :biblist, 0..1
 
 module ReVIEW
-  module BibTeXExt
+  module BibLaTeXExt
     class Error < StandardError; end
 
     CitationItem = Struct.new(:key, keyword_init: true)
@@ -83,7 +83,7 @@ module ReVIEW
 
       def self.entry_title(entry)
         title = entry.field('title')
-        raise Error, "bibtex entry has no title: #{entry.key}" unless title
+        raise Error, "biblatex entry has no title: #{entry.key}" unless title
 
         title = normalized_title(entry, title)
         return title unless cjk?(entry)
@@ -93,21 +93,21 @@ module ReVIEW
 
       def self.original_title(entry)
         title = entry.field('origtitle', 'originaltitle')
-        raise Error, "bibtex entry has no origtitle: #{entry.key}" unless title
+        raise Error, "biblatex entry has no origtitle: #{entry.key}" unless title
 
-        strip_bibtex_protection(title)
+        strip_biblatex_protection(title)
       end
 
       def self.csl_json_title(entry)
         title = entry.field('title')
         return nil unless title
-        return strip_bibtex_protection(title) if cjk?(entry)
+        return strip_biblatex_protection(title) if cjk?(entry)
 
-        sentence_case_bibtex_title(title)
+        sentence_case_biblatex_title(title)
       end
 
       def self.normalized_title(entry, title)
-        cjk?(entry) ? strip_bibtex_protection(title) : sentence_case_bibtex_title(title)
+        cjk?(entry) ? strip_biblatex_protection(title) : sentence_case_biblatex_title(title)
       end
 
       def self.cjk?(entry)
@@ -118,11 +118,11 @@ module ReVIEW
         ARTICLE_LIKE_TYPES.include?(entry.type)
       end
 
-      def self.strip_bibtex_protection(title)
+      def self.strip_biblatex_protection(title)
         title.to_s.delete('{}')
       end
 
-      def self.sentence_case_bibtex_title(title)
+      def self.sentence_case_biblatex_title(title)
         protected_depth = 0
         seen_letter = false
         output = +''
@@ -154,26 +154,26 @@ module ReVIEW
       DEFAULT_STYLE = 'review.csl'
 
       def self.load(book)
-        config = book.config['bibtex'] || {}
+        config = book.config['biblatex'] || {}
         files = config.key?('files') ? config['files'] : DEFAULT_FILES
-        raise Error, 'bibtex.files must be a non-empty array.' if !files.is_a?(Array) || files.empty?
+        raise Error, 'biblatex.files must be a non-empty array.' if !files.is_a?(Array) || files.empty?
 
         style = resolve_style(book, config['style'])
         lang = config['lang']
-        raise Error, 'bibtex.lang must be a non-empty string.' if lang && (!lang.is_a?(String) || lang.empty?)
+        raise Error, 'biblatex.lang must be a non-empty string.' if lang && (!lang.is_a?(String) || lang.empty?)
 
         parser = Parser.new
         entries = {}
         bibliography_paths = []
         files.each do |file|
-          raise Error, "absolute bibtex file path is not allowed: #{file}" if Pathname.new(file).absolute?
+          raise Error, "absolute biblatex file path is not allowed: #{file}" if Pathname.new(file).absolute?
 
           path = File.join(book.contentdir, file)
-          raise Error, "bibtex file is not found: #{file}" unless File.file?(path)
+          raise Error, "biblatex file is not found: #{file}" unless File.file?(path)
 
           bibliography_paths << path
           parser.parse(File.read(path, mode: 'rt:BOM|utf-8')).each do |entry|
-            raise Error, "duplicated bibtex key: #{entry.key}" if entries.key?(entry.key)
+            raise Error, "duplicated biblatex key: #{entry.key}" if entries.key?(entry.key)
 
             entries[entry.key] = entry
           end
@@ -186,11 +186,11 @@ module ReVIEW
 
       def self.resolve_style(book, style)
         style ||= DEFAULT_STYLE
-        raise Error, 'bibtex.style must be a non-empty string.' if !style.is_a?(String) || style.empty?
-        raise Error, "absolute bibtex style path is not allowed: #{style}" if Pathname.new(style).absolute?
+        raise Error, 'biblatex.style must be a non-empty string.' if !style.is_a?(String) || style.empty?
+        raise Error, "absolute biblatex style path is not allowed: #{style}" if Pathname.new(style).absolute?
 
         path = File.join(book.contentdir, style)
-        raise Error, "bibtex style file is not found: #{style}" unless File.file?(path)
+        raise Error, "biblatex style file is not found: #{style}" unless File.file?(path)
 
         Style.new(path: path)
       end
@@ -215,7 +215,7 @@ module ReVIEW
       end
 
       def entry(key)
-        @entries.fetch(key) { raise Error, "unknown bibtex key: #{key}" }
+        @entries.fetch(key) { raise Error, "unknown biblatex key: #{key}" }
       end
 
       def title(source, command_name: '@<bibtitle>')
@@ -331,7 +331,7 @@ module ReVIEW
 
       def run_pandoc(markdown, target:)
         command = [
-          ENV.fetch('REVIEW_BIBTEX_PANDOC', 'pandoc'),
+          ENV.fetch('REVIEW_BIBLATEX_PANDOC', 'pandoc'),
           '-f', 'markdown',
           '-t', target.to_s,
           '--wrap=none',
@@ -416,7 +416,7 @@ module ReVIEW
 
       def tempfile
         @tempfile ||= begin
-          file = Tempfile.new(['review-bibtex-ext-', '.json'])
+          file = Tempfile.new(['review-biblatex-ext-', '.json'])
           file.write(JSON.pretty_generate(items))
           file.write("\n")
           file.flush
@@ -426,11 +426,11 @@ module ReVIEW
 
       def convert_file(path)
         stdout, stderr, status = Open3.capture3(pandoc_command, '-f', 'biblatex', '-t', 'csljson', path)
-        raise Error, "bibtex to csl json conversion failed: #{stderr.strip}" unless status.success?
+        raise Error, "biblatex to csl json conversion failed: #{stderr.strip}" unless status.success?
 
         JSON.parse(stdout)
       rescue JSON::ParserError => e
-        raise Error, "bibtex to csl json conversion returned invalid json: #{e.message}"
+        raise Error, "biblatex to csl json conversion returned invalid json: #{e.message}"
       rescue Errno::ENOENT
         raise Error, 'pandoc command is required for CSL rendering.'
       end
@@ -456,7 +456,7 @@ module ReVIEW
       end
 
       def pandoc_command
-        ENV.fetch('REVIEW_BIBTEX_PANDOC', 'pandoc')
+        ENV.fetch('REVIEW_BIBLATEX_PANDOC', 'pandoc')
       end
     end
 
@@ -504,7 +504,7 @@ module ReVIEW
       def parse_entry(type, body)
         key, fields_source = split_top_level(body, ',')
         key = key.to_s.strip
-        raise Error, 'bibtex entry key is empty.' if key.empty?
+        raise Error, 'biblatex entry key is empty.' if key.empty?
 
         Entry.new(type: type, key: key, fields: parse_fields(fields_source.to_s))
       end
@@ -517,11 +517,11 @@ module ReVIEW
           break if scanner.eos?
 
           name = scanner.scan(/[A-Za-z][A-Za-z0-9_-]*/)
-          raise Error, "invalid bibtex field near: #{scanner.rest}" unless name
+          raise Error, "invalid biblatex field near: #{scanner.rest}" unless name
           name = name.downcase
 
           skip_space(scanner)
-          raise Error, "missing '=' for bibtex field: #{name}" unless scanner.getch == '='
+          raise Error, "missing '=' for biblatex field: #{name}" unless scanner.getch == '='
 
           skip_space(scanner)
           fields[name] = normalize_value(read_value(scanner))
@@ -568,7 +568,7 @@ module ReVIEW
           end
           buffer << ch
         end
-        raise Error, 'unterminated bibtex entry.'
+        raise Error, 'unterminated biblatex entry.'
       end
 
       def read_braced_value(scanner)
@@ -584,7 +584,7 @@ module ReVIEW
           end
           buffer << ch
         end
-        raise Error, 'unterminated braced bibtex value.'
+        raise Error, 'unterminated braced biblatex value.'
       end
 
       def read_quoted_value(scanner)
@@ -595,7 +595,7 @@ module ReVIEW
 
           buffer << ch
         end
-        raise Error, 'unterminated quoted bibtex value.'
+        raise Error, 'unterminated quoted biblatex value.'
       end
 
       def split_top_level(source, delimiter)
@@ -635,40 +635,40 @@ module ReVIEW
     end
 
     module BuilderSupport
-      def bibtex_ext_database
-        @book.cache.fetch(:bibtex_ext_database) do
-          ReVIEW::BibTeXExt::Database.load(@book)
+      def biblatex_ext_database
+        @book.cache.fetch(:biblatex_ext_database) do
+          ReVIEW::BibLaTeXExt::Database.load(@book)
         end
       end
 
-      def bibtex_ext_reference_scope
-        if bibtex_ext_chapter_list_location(@chapter.id)
+      def biblatex_ext_reference_scope
+        if biblatex_ext_chapter_list_location(@chapter.id)
           [:chapter, @chapter.id]
         else
           [:book, nil]
         end
       end
 
-      def bibtex_ext_biblist_scope(chapter_id)
+      def biblatex_ext_biblist_scope(chapter_id)
         app_error '//biblist[] is not allowed.' if chapter_id == ''
 
         scope = chapter_id ? :chapter : :book
-        bibtex_ext_validate_chapter_id(chapter_id) if chapter_id
+        biblatex_ext_validate_chapter_id(chapter_id) if chapter_id
         [scope, chapter_id]
       end
 
-      def bibtex_ext_validate_chapter_id(chapter_id)
+      def biblatex_ext_validate_chapter_id(chapter_id)
         return if @book.chapter_index.key?(chapter_id)
 
         app_error "unknown biblist id: #{chapter_id}"
       end
 
-      def bibtex_ext_chapter_list_location(chapter_id)
-        bibtex_ext_list_locations_in_book.find { |candidate| candidate[:scope] == :chapter && candidate[:chapter_id] == chapter_id }
+      def biblatex_ext_chapter_list_location(chapter_id)
+        biblatex_ext_list_locations_in_book.find { |candidate| candidate[:scope] == :chapter && candidate[:chapter_id] == chapter_id }
       end
 
-      def bibtex_ext_list_locations_in_book
-        @book.cache.fetch(:bibtex_ext_list_locations) do
+      def biblatex_ext_list_locations_in_book
+        @book.cache.fetch(:biblatex_ext_list_locations) do
           chapters = @book.catalog ? @book.contents : [@chapter]
           chapters.each_with_object([]) do |chapter, scopes|
             next unless chapter.content
@@ -687,70 +687,70 @@ module ReVIEW
 end
 
 class ReVIEW::HTMLBuilder
-  include ReVIEW::BibTeXExt::BuilderSupport
+  include ReVIEW::BibLaTeXExt::BuilderSupport
 
   def inline_bibref(source)
-    db = bibtex_ext_database
+    db = biblatex_ext_database
     group = db.cite(@chapter.id, source)
-    scope, chapter_id = bibtex_ext_reference_scope
+    scope, chapter_id = biblatex_ext_reference_scope
     db.render_citation(group, scope: scope, chapter_id: chapter_id).gsub(/id=(["'])ref-([^"']+)\1/) do
-      %Q(id="bibtex-#{normalize_id(Regexp.last_match(2))}")
+      %Q(id="biblatex-#{normalize_id(Regexp.last_match(2))}")
     end
-  rescue ReVIEW::BibTeXExt::Error => e
+  rescue ReVIEW::BibLaTeXExt::Error => e
     app_error e.message
   end
 
   def inline_bibtitle(source)
-    escape(bibtex_ext_database.title(source))
-  rescue ReVIEW::BibTeXExt::Error => e
+    escape(biblatex_ext_database.title(source))
+  rescue ReVIEW::BibLaTeXExt::Error => e
     app_error e.message
   end
 
   def biblist(chapter_id = nil)
-    scope, chapter_id = bibtex_ext_biblist_scope(chapter_id)
-    bibliography = bibtex_ext_database.render_bibliography(scope: scope, chapter_id: chapter_id)
-    bibliography = bibliography.gsub(/id=(["'])ref-([^"']+)\1/) { %Q(id="bibtex-#{normalize_id(Regexp.last_match(2))}") }
-    puts %Q(<div class="bibtex-list"#{%Q( data-biblist-id="#{escape(chapter_id)}") if chapter_id}>)
+    scope, chapter_id = biblatex_ext_biblist_scope(chapter_id)
+    bibliography = biblatex_ext_database.render_bibliography(scope: scope, chapter_id: chapter_id)
+    bibliography = bibliography.gsub(/id=(["'])ref-([^"']+)\1/) { %Q(id="biblatex-#{normalize_id(Regexp.last_match(2))}") }
+    puts %Q(<div class="biblatex-list"#{%Q( data-biblist-id="#{escape(chapter_id)}") if chapter_id}>)
     puts bibliography unless bibliography.empty?
     puts '</div>'
-  rescue ReVIEW::BibTeXExt::Error => e
+  rescue ReVIEW::BibLaTeXExt::Error => e
     app_error e.message
   end
 end
 
 class ReVIEW::LATEXBuilder
-  include ReVIEW::BibTeXExt::BuilderSupport
+  include ReVIEW::BibLaTeXExt::BuilderSupport
 
   def inline_bibref(source)
-    db = bibtex_ext_database
+    db = biblatex_ext_database
     group = db.cite(@chapter.id, source)
-    scope, chapter_id = bibtex_ext_reference_scope
+    scope, chapter_id = biblatex_ext_reference_scope
     db.render_latex_citation(group, scope: scope, chapter_id: chapter_id)
-  rescue ReVIEW::BibTeXExt::Error => e
+  rescue ReVIEW::BibLaTeXExt::Error => e
     app_error e.message
   end
 
   def inline_bibtitle(source)
-    escape(bibtex_ext_database.title(source))
-  rescue ReVIEW::BibTeXExt::Error => e
+    escape(biblatex_ext_database.title(source))
+  rescue ReVIEW::BibLaTeXExt::Error => e
     app_error e.message
   end
 
   def biblist(chapter_id = nil)
-    scope, chapter_id = bibtex_ext_biblist_scope(chapter_id)
-    bibliography = bibtex_ext_database.render_latex_bibliography(scope: scope, chapter_id: chapter_id)
+    scope, chapter_id = biblatex_ext_biblist_scope(chapter_id)
+    bibliography = biblatex_ext_database.render_latex_bibliography(scope: scope, chapter_id: chapter_id)
     return if bibliography.empty?
 
-    puts bibtex_ext_latex_csl_definitions
+    puts biblatex_ext_latex_csl_definitions
     puts bibliography
-  rescue ReVIEW::BibTeXExt::Error => e
+  rescue ReVIEW::BibLaTeXExt::Error => e
     app_error e.message
   end
 
-  def bibtex_ext_latex_csl_definitions
-    return '' if @bibtex_ext_latex_csl_definitions
+  def biblatex_ext_latex_csl_definitions
+    return '' if @biblatex_ext_latex_csl_definitions
 
-    @bibtex_ext_latex_csl_definitions = true
+    @biblatex_ext_latex_csl_definitions = true
     <<~'TEX'
       \makeatletter
       \providecommand{\citeproctext}{}
