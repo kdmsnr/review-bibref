@@ -46,12 +46,13 @@ class BibLaTeXSampleTest < Minitest::Test
     assert_includes ch01, 'id="biblatex-tanaka2021"'
 
     ch02 = read_output('ch02.html')
-    assert_includes ch02, '翻訳書の日本語版タイトルは『翻訳された架空の都市論』'
-    assert_includes ch02, '原書名は<em>Imaginary Cities and Shared Maps</em>'
-    assert_includes ch02, '両方なら『翻訳された架空の都市論』（原題: <em>Imaginary Cities and Shared Maps</em>）'
+    assert_includes ch02, '翻訳書の日本語版タイトルは『翻訳された架空の都市論: 共有地図の実例』'
+    assert_includes ch02, '原書名は<em>Imaginary Cities and Shared Maps: A Field Guide</em>'
+    assert_includes ch02, '両方なら『翻訳された架空の都市論: 共有地図の実例』（原題: <em>Imaginary Cities and Shared Maps: A Field Guide</em>）'
     assert_includes ch02, '<div class="biblatex-list" data-biblist-id="ch02">'
     assert_includes ch02, 'id="biblatex-translation2020ja"'
-    assert_includes ch02, '原著: Imaginary Cities and Shared Maps, 2016, Fictional Cartography Press'
+    assert_includes ch02, '<em>Designing sample books: Practical patterns for examples</em>'
+    assert_includes ch02, '原著: Imaginary Cities and Shared Maps: A Field Guide, 2016, Fictional Cartography Press'
 
     refs = read_output('refs.html')
     assert_includes refs, '<div class="biblatex-list">'
@@ -69,10 +70,11 @@ class BibLaTeXSampleTest < Minitest::Test
     assert_includes ch01, '\\begin{CSLReferences}{1}{0}'
 
     ch02 = read_output('ch02.tex')
-    assert_includes ch02, '翻訳書の日本語版タイトルは『翻訳された架空の都市論』'
-    assert_includes ch02, '原書名は\\emph{Imaginary Cities and Shared Maps}'
-    assert_includes ch02, '両方なら『翻訳された架空の都市論』（原題: \\emph{Imaginary Cities and Shared Maps}）'
-    assert_includes ch02, '原著: Imaginary Cities and Shared Maps, 2016, Fictional Cartography Press'
+    assert_includes ch02, '翻訳書の日本語版タイトルは『翻訳された架空の都市論: 共有地図の実例』'
+    assert_includes ch02, '原書名は\\emph{Imaginary Cities and Shared Maps: A Field Guide}'
+    assert_includes ch02, '両方なら『翻訳された架空の都市論: 共有地図の実例』（原題: \\emph{Imaginary Cities and Shared Maps: A Field Guide}）'
+    assert_includes ch02, '\\emph{Designing sample books: Practical patterns for examples}'
+    assert_includes ch02, '原著: Imaginary Cities and Shared Maps: A Field Guide, 2016, Fictional Cartography Press'
   end
 
   def test_script_does_not_embed_bibtitle_label
@@ -88,7 +90,7 @@ class BibLaTeXSampleTest < Minitest::Test
     run_review_compile('html')
 
     ch02 = read_output('ch02.html')
-    assert_includes ch02, '原書名は<em>Imaginary Cities and Shared Maps</em>'
+    assert_includes ch02, '原書名は<em>Imaginary Cities and Shared Maps: A Field Guide</em>'
     assert_includes ch02, '<div class="biblatex-list" data-biblist-id="ch02">'
   end
 

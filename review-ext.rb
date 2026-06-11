@@ -70,16 +70,18 @@ module ReVIEW
       def self.csl_json_title(entry)
         title = entry.field('title')
         return nil unless title
-        return strip_biblatex_protection(title) if cjk?(entry)
 
-        sentence_case_biblatex_title(title)
+        subtitle = entry.field('subtitle')
+        formatter = cjk?(entry) ? method(:strip_biblatex_protection) : method(:sentence_case_biblatex_title)
+        join_title_parts(title, subtitle, formatter)
       end
 
       def self.csl_json_original_title(entry)
         title = entry.field('origtitle', 'originaltitle')
         return nil unless title
 
-        strip_biblatex_protection(title)
+        subtitle = entry.field('origsubtitle', 'originalsubtitle')
+        join_title_parts(title, subtitle, method(:strip_biblatex_protection))
       end
 
       def self.cjk?(entry)
@@ -88,6 +90,10 @@ module ReVIEW
 
       def self.strip_biblatex_protection(title)
         title.to_s.delete('{}')
+      end
+
+      def self.join_title_parts(title, subtitle, formatter)
+        [title, subtitle].compact.map { |part| formatter.call(part) }.reject(&:empty?).join(': ')
       end
 
       def self.sentence_case_biblatex_title(title)
