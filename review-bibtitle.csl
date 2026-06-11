@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<style xmlns="http://purl.org/net/xbiblio/csl" class="in-text" version="1.0">
+  <info>
+    <title>Re:VIEW BibTitle</title>
+    <id>https://reviewml.org/styles/review-bibtitle</id>
+    <author>
+      <name>Re:VIEW project</name>
+    </author>
+    <category citation-format="author-date"/>
+    <category field="generic-base"/>
+    <updated>2026-06-11T00:00:00+00:00</updated>
+  </info>
+
+  <macro name="title">
+    <choose>
+      <if type="book" variable="language" match="all">
+        <text variable="title" prefix="『" suffix="』"/>
+      </if>
+      <else-if type="book" match="any">
+        <text variable="title" font-style="italic"/>
+      </else-if>
+      <else-if type="article-journal paper-conference chapter" variable="language" match="all">
+        <text variable="title" prefix="「" suffix="」"/>
+      </else-if>
+      <else>
+        <text variable="title"/>
+      </else>
+    </choose>
+  </macro>
+
+  <macro name="original-title">
+    <choose>
+      <if type="book" match="any">
+        <text variable="original-title" font-style="italic"/>
+      </if>
+      <else-if type="article-journal paper-conference chapter" match="any">
+        <text variable="original-title" quotes="true"/>
+      </else-if>
+      <else>
+        <text variable="original-title"/>
+      </else>
+    </choose>
+  </macro>
+
+  <citation>
+    <layout>
+      <choose>
+        <if variable="title original-title" match="all">
+          <group delimiter="">
+            <text macro="title"/>
+            <text macro="original-title" prefix="（原題: " suffix="）"/>
+          </group>
+        </if>
+        <else-if variable="original-title">
+          <text macro="original-title"/>
+        </else-if>
+        <else>
+          <text macro="title"/>
+        </else>
+      </choose>
+    </layout>
+  </citation>
+</style>

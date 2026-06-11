@@ -14,4 +14,5 @@ texstyle: ["reviewmacro"]
 biblatex:
   files:
     - references.bib
-  style: review.csl
+  style: review-bibref.csl
+  style_bibtitle: review-bibtitle.csl

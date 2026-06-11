@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
 require 'fileutils'
+require 'date'
 require 'minitest/autorun'
 require 'open3'
 require 'shellwords'
 require 'tmpdir'
+require 'yaml'
 
 class BibLaTeXSampleTest < Minitest::Test
   ROOT = File.expand_path('..', __dir__)
@@ -16,7 +18,8 @@ class BibLaTeXSampleTest < Minitest::Test
     references.bib
     refs.re
     review-ext.rb
-    review.csl
+    review-bibref.csl
+    review-bibtitle.csl
     style.css
   ].freeze
 
@@ -44,8 +47,8 @@ class BibLaTeXSampleTest < Minitest::Test
 
     ch02 = read_output('ch02.html')
     assert_includes ch02, '翻訳書の日本語版タイトルは『翻訳された架空の都市論』'
-    assert_includes ch02, '原書名はImaginary Cities and Shared Maps'
-    assert_includes ch02, '両方なら『翻訳された架空の都市論』（原題: Imaginary Cities and Shared Maps）'
+    assert_includes ch02, '原書名は<em>Imaginary Cities and Shared Maps</em>'
+    assert_includes ch02, '両方なら『翻訳された架空の都市論』（原題: <em>Imaginary Cities and Shared Maps</em>）'
     assert_includes ch02, '<div class="biblatex-list" data-biblist-id="ch02">'
     assert_includes ch02, 'id="biblatex-translation2020ja"'
     assert_includes ch02, '原著: Imaginary Cities and Shared Maps, 2016, Fictional Cartography Press'
@@ -67,8 +70,26 @@ class BibLaTeXSampleTest < Minitest::Test
 
     ch02 = read_output('ch02.tex')
     assert_includes ch02, '翻訳書の日本語版タイトルは『翻訳された架空の都市論』'
-    assert_includes ch02, '原書名はImaginary Cities and Shared Maps'
+    assert_includes ch02, '原書名は\\emph{Imaginary Cities and Shared Maps}'
+    assert_includes ch02, '両方なら『翻訳された架空の都市論』（原題: \\emph{Imaginary Cities and Shared Maps}）'
     assert_includes ch02, '原著: Imaginary Cities and Shared Maps, 2016, Fictional Cartography Press'
+  end
+
+  def test_script_does_not_embed_bibtitle_label
+    refute_includes File.read(File.join(ROOT, 'review-ext.rb')), '原題'
+  end
+
+  def test_default_biblatex_styles
+    config_path = File.join(@workdir, 'config.yml')
+    config = YAML.load_file(config_path, permitted_classes: [Date])
+    config.delete('biblatex')
+    File.write(config_path, YAML.dump(config))
+
+    run_review_compile('html')
+
+    ch02 = read_output('ch02.html')
+    assert_includes ch02, '原書名は<em>Imaginary Cities and Shared Maps</em>'
+    assert_includes ch02, '<div class="biblatex-list" data-biblist-id="ch02">'
   end
 
   private

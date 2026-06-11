@@ -65,38 +65,7 @@ module ReVIEW
     end
 
     module TitleFormatter
-      ARTICLE_LIKE_TYPES = %w[article inbook incollection inproceedings conference].freeze
       CJK_LANGS = %w[japanese ja ja-jp chinese zh korean ko].freeze
-
-      def self.title(entry, mode:)
-        case mode
-        when :title
-          entry_title(entry)
-        when :original
-          original_title(entry)
-        when :both
-          "#{entry_title(entry)}（原題: #{original_title(entry)}）"
-        else
-          raise Error, "unsupported bibtitle mode: #{mode}"
-        end
-      end
-
-      def self.entry_title(entry)
-        title = entry.field('title')
-        raise Error, "biblatex entry has no title: #{entry.key}" unless title
-
-        title = normalized_title(entry, title)
-        return title unless cjk?(entry)
-
-        article_like?(entry) ? "「#{title}」" : "『#{title}』"
-      end
-
-      def self.original_title(entry)
-        title = entry.field('origtitle', 'originaltitle')
-        raise Error, "biblatex entry has no origtitle: #{entry.key}" unless title
-
-        strip_biblatex_protection(title)
-      end
 
       def self.csl_json_title(entry)
         title = entry.field('title')
@@ -106,16 +75,15 @@ module ReVIEW
         sentence_case_biblatex_title(title)
       end
 
-      def self.normalized_title(entry, title)
-        cjk?(entry) ? strip_biblatex_protection(title) : sentence_case_biblatex_title(title)
+      def self.csl_json_original_title(entry)
+        title = entry.field('origtitle', 'originaltitle')
+        return nil unless title
+
+        strip_biblatex_protection(title)
       end
 
       def self.cjk?(entry)
         CJK_LANGS.include?(entry.field('langid', 'language').to_s.downcase)
-      end
-
-      def self.article_like?(entry)
-        ARTICLE_LIKE_TYPES.include?(entry.type)
       end
 
       def self.strip_biblatex_protection(title)
@@ -151,14 +119,16 @@ module ReVIEW
 
     class Database
       DEFAULT_FILES = ['references.bib'].freeze
-      DEFAULT_STYLE = 'review.csl'
+      DEFAULT_STYLE = 'review-bibref.csl'
+      DEFAULT_STYLE_BIBTITLE = 'review-bibtitle.csl'
 
       def self.load(book)
         config = book.config['biblatex'] || {}
         files = config.key?('files') ? config['files'] : DEFAULT_FILES
         raise Error, 'biblatex.files must be a non-empty array.' if !files.is_a?(Array) || files.empty?
 
-        style = resolve_style(book, config['style'])
+        style = resolve_style(book, config['style'] || DEFAULT_STYLE, 'biblatex.style')
+        style_bibtitle = resolve_style(book, config['style_bibtitle'] || DEFAULT_STYLE_BIBTITLE, 'biblatex.style_bibtitle')
         lang = config['lang']
         raise Error, 'biblatex.lang must be a non-empty string.' if lang && (!lang.is_a?(String) || lang.empty?)
 
@@ -179,27 +149,27 @@ module ReVIEW
           end
         end
 
-        database = new(entries, style, bibliography_paths: bibliography_paths, lang: lang)
+        database = new(entries, style, style_bibtitle, bibliography_paths: bibliography_paths, lang: lang)
         database.scan_book(book)
         database
       end
 
-      def self.resolve_style(book, style)
-        style ||= DEFAULT_STYLE
-        raise Error, 'biblatex.style must be a non-empty string.' if !style.is_a?(String) || style.empty?
-        raise Error, "absolute biblatex style path is not allowed: #{style}" if Pathname.new(style).absolute?
+      def self.resolve_style(book, style, config_key)
+        raise Error, "#{config_key} must be a non-empty string." if !style.is_a?(String) || style.empty?
+        raise Error, "absolute #{config_key} path is not allowed: #{style}" if Pathname.new(style).absolute?
 
         path = File.join(book.contentdir, style)
-        raise Error, "biblatex style file is not found: #{style}" unless File.file?(path)
+        raise Error, "#{config_key} file is not found: #{style}" unless File.file?(path)
 
         Style.new(path: path)
       end
 
       attr_reader :style, :bibliography_paths, :lang
 
-      def initialize(entries, style, bibliography_paths:, lang:)
+      def initialize(entries, style, style_bibtitle, bibliography_paths:, lang:)
         @entries = entries
         @style = style
+        @style_bibtitle = style_bibtitle
         @bibliography_paths = bibliography_paths
         @lang = lang
         @book_order = []
@@ -220,7 +190,16 @@ module ReVIEW
 
       def title(source, command_name: '@<bibtitle>')
         request = TitleRequestParser.parse(source, command_name)
-        TitleFormatter.title(entry(request.key), mode: request.mode)
+        processor.render_title(request)
+      end
+
+      def latex_title(source, command_name: '@<bibtitle>')
+        request = TitleRequestParser.parse(source, command_name)
+        processor.render_latex_title(request)
+      end
+
+      def style_bibtitle
+        @style_bibtitle
       end
 
       def citation_keys(scope:, chapter_id: nil)
@@ -313,6 +292,29 @@ module ReVIEW
         extract_latex_bibliography(latex)
       end
 
+      def render_title(request)
+        html = run_pandoc(
+          markdown_for_title(request),
+          target: :html,
+          style: @database.style_bibtitle,
+          bibliography: csl_json_bibliography.title_path(request)
+        )
+        paragraphs = REXML::XPath.match(html_document(html), '/root/p')
+        raise Error, 'csl processor did not render a title.' if paragraphs.empty?
+
+        inner_citation_html(paragraphs.last)
+      end
+
+      def render_latex_title(request)
+        latex = run_pandoc(
+          markdown_for_title(request),
+          target: :latex,
+          style: @database.style_bibtitle,
+          bibliography: csl_json_bibliography.title_path(request)
+        )
+        unwrap_latex_citeproc(extract_latex_citation(latex))
+      end
+
       private
 
       def markdown_for_citation(group, scope:, chapter_id:)
@@ -329,16 +331,20 @@ module ReVIEW
         "#{blocks.join("\n\n")}\n"
       end
 
-      def run_pandoc(markdown, target:)
+      def markdown_for_title(request)
+        "[@#{request.key}]\n"
+      end
+
+      def run_pandoc(markdown, target:, style: @database.style, bibliography: csl_json_bibliography.path)
         command = [
           ENV.fetch('REVIEW_BIBLATEX_PANDOC', 'pandoc'),
           '-f', 'markdown',
           '-t', target.to_s,
           '--wrap=none',
           '--citeproc',
-          "--csl=#{@database.style.path}",
+          "--csl=#{style.path}",
           '--metadata=link-citations:false',
-          "--bibliography=#{csl_json_bibliography.path}"
+          "--bibliography=#{bibliography}"
         ]
         command << "--metadata=lang:#{@database.lang}" if @database.lang
 
@@ -373,6 +379,24 @@ module ReVIEW
 
       def inner_html(element)
         element.children.map { |child| node_html(child) }.join
+      end
+
+      def inner_citation_html(element)
+        if element.children.size == 1
+          child = element.children.first
+          return inner_html(child) if citation_span?(child)
+        end
+
+        inner_html(element)
+      end
+
+      def citation_span?(node)
+        node.is_a?(REXML::Element) && node.name == 'span' && node.attributes['class'].to_s.split.include?('citation')
+      end
+
+      def unwrap_latex_citeproc(latex)
+        match = latex.match(/\A\\protect\\citeproc\{[^{}]+\}\{(.*)\}\z/m)
+        match ? match[1] : latex
       end
 
       def node_html(node)
@@ -412,12 +436,27 @@ module ReVIEW
         @items ||= @database.bibliography_paths.flat_map { |path| convert_file(path) }.map { |item| normalize_item(item) }
       end
 
+      def title_path(request)
+        title_tempfile(request).path
+      end
+
       private
 
       def tempfile
         @tempfile ||= begin
           file = Tempfile.new(['review-biblatex-ext-', '.json'])
           file.write(JSON.pretty_generate(items))
+          file.write("\n")
+          file.flush
+          file
+        end
+      end
+
+      def title_tempfile(request)
+        @title_tempfiles ||= {}
+        @title_tempfiles[[request.key, request.mode]] ||= begin
+          file = Tempfile.new(['review-biblatex-title-', '.json'])
+          file.write(JSON.pretty_generate([title_item(request)]))
           file.write("\n")
           file.flush
           file
@@ -444,6 +483,44 @@ module ReVIEW
         item
       end
 
+      def title_item(request)
+        entry = @database.entry(request.key)
+
+        item = (items.find { |candidate| candidate['id'].to_s == request.key } || {}).dup
+        item['id'] = request.key
+
+        case request.mode
+        when :title
+          item['title'] = title_for(entry)
+          item.delete('original-title')
+        when :original
+          item['original-title'] = original_title_for(entry)
+          item.delete('title')
+          item.delete('language')
+        when :both
+          item['title'] = title_for(entry)
+          item['original-title'] = original_title_for(entry)
+        else
+          raise Error, "unsupported bibtitle mode: #{request.mode}"
+        end
+
+        item
+      end
+
+      def title_for(entry)
+        title = TitleFormatter.csl_json_title(entry)
+        raise Error, "biblatex entry has no title: #{entry.key}" unless title
+
+        title
+      end
+
+      def original_title_for(entry)
+        title = TitleFormatter.csl_json_original_title(entry)
+        raise Error, "biblatex entry has no origtitle: #{entry.key}" unless title
+
+        title
+      end
+
       def normalize_language(item, entry)
         langid = entry.field('langid', 'language').to_s.downcase
         language = LANGID_TO_LANGUAGE[langid]
@@ -453,6 +530,8 @@ module ReVIEW
       def normalize_title(item, entry)
         title = TitleFormatter.csl_json_title(entry)
         item['title'] = title if title
+        original_title = TitleFormatter.csl_json_original_title(entry)
+        item['original-title'] = original_title if original_title
       end
 
       def pandoc_command
@@ -701,7 +780,7 @@ class ReVIEW::HTMLBuilder
   end
 
   def inline_bibtitle(source)
-    escape(biblatex_ext_database.title(source))
+    biblatex_ext_database.title(source)
   rescue ReVIEW::BibLaTeXExt::Error => e
     app_error e.message
   end
@@ -731,7 +810,7 @@ class ReVIEW::LATEXBuilder
   end
 
   def inline_bibtitle(source)
-    escape(biblatex_ext_database.title(source))
+    biblatex_ext_database.latex_title(source)
   rescue ReVIEW::BibLaTeXExt::Error => e
     app_error e.message
   end

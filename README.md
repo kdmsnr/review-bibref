@@ -107,6 +107,7 @@ REVIEW_COMPILE='ruby -I /path/to/review/lib /path/to/review/bin/review-compile' 
 ```
 
 それぞれ、翻訳後の書名、原書名、両方を出力します。
+書名だけを取り出すときの表記は `review-bibtitle.csl` で指定します。このサンプルでは、書籍の原書名はイタリック、論文や章の原題は引用符つきで出力します。
 
 ## 翻訳書の BibLaTeX
 
@@ -136,29 +137,23 @@ REVIEW_COMPILE='ruby -I /path/to/review/lib /path/to/review/bin/review-compile' 
 biblatex:
   files:
     - references.bib
-  style: review.csl
+  style: review-bibref.csl
+  style_bibtitle: review-bibtitle.csl
 ```
 
-`files` には読み込む BibLaTeX ファイルを指定します。`style` には、このプロジェクトから見た CSL ファイルのパスを書きます。
+設定できる項目は次のとおりです。パスは Re:VIEW プロジェクトのディレクトリからの相対パスで指定します。
 
-このサンプルでは `style.css` も `config.yml` で指定しています。
-
-別の BibLaTeX ファイルや CSL ファイルを使う場合は、Re:VIEW の設定ファイルに次のように書きます。
-
-```yaml
-biblatex:
-  files:
-    - my-references.bib
-  style: my-style.csl
-```
-
-`biblatex` 設定を省略した場合でも、`review-ext.rb` はデフォルトで `references.bib` と `review.csl` を使います。
+| 項目             | 既定値                | 説明                                                  |
+|------------------|-----------------------|-------------------------------------------------------|
+| `files`          | `["references.bib"]`  | 読み込む BibLaTeX ファイルです。                      |
+| `style`          | `review-bibref.csl`   | `@<bibref>` と `//biblist` に使う CSL ファイルです。  |
+| `style_bibtitle` | `review-bibtitle.csl` | `@<bibtitle>` に使う CSL ファイルです。               |
+| `lang`           | 未指定                | Pandoc に渡す文書言語です。必要な場合だけ指定します。 |
 
 ## 主なファイル
 
 - `review-ext.rb`: Re:VIEW プロジェクトローカルの拡張です。`@<bibref>`、`@<bibtitle>`、`//biblist` を実装しています。
-- `review.csl`: デフォルトで使う CSL です。
+- `review-bibref.csl`: 通常の引用と参考文献一覧でデフォルトで使う CSL です。
+- `review-bibtitle.csl`: `@<bibtitle>` で書名だけを出すための CSL です。
 - `references.bib`: 架空の BibLaTeX サンプルデータです。
-- `catalog.yml`: `ch01.re`、`ch02.re`、`refs.re` の構成を定義します。
 - `config.yml`: Re:VIEW と BibLaTeX/CSL の設定例です。
-- `style.css`: HTML 表示用の簡単なスタイルです。
