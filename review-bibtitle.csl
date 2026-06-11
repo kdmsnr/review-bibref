@@ -14,16 +14,47 @@
   <macro name="title">
     <choose>
       <if type="book" variable="language" match="all">
-        <text variable="title" prefix="『" suffix="』"/>
+        <group delimiter="，">
+          <text variable="title" prefix="『" suffix="』"/>
+          <text macro="edition-ja"/>
+        </group>
       </if>
       <else-if type="book" match="any">
-        <text variable="title" font-style="italic"/>
+        <group delimiter=". ">
+          <text variable="title" font-style="italic"/>
+          <text macro="edition"/>
+        </group>
       </else-if>
       <else-if type="article-journal paper-conference chapter" variable="language" match="all">
         <text variable="title" prefix="「" suffix="」"/>
       </else-if>
       <else>
         <text variable="title"/>
+      </else>
+    </choose>
+  </macro>
+
+  <macro name="edition">
+    <choose>
+      <if is-numeric="edition">
+        <group delimiter=" ">
+          <number variable="edition" form="ordinal"/>
+          <text term="edition" form="short"/>
+        </group>
+      </if>
+      <else>
+        <text variable="edition"/>
+      </else>
+    </choose>
+  </macro>
+
+  <macro name="edition-ja">
+    <choose>
+      <if is-numeric="edition">
+        <number variable="edition" prefix="第" suffix="版"/>
+      </if>
+      <else>
+        <text variable="edition"/>
       </else>
     </choose>
   </macro>

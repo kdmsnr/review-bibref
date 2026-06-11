@@ -119,6 +119,7 @@ REVIEW_COMPILE='ruby -I /path/to/review/lib /path/to/review/bin/review-compile' 
   title         = {翻訳された架空の都市論},
   subtitle      = {共有地図の実例},
   translator    = {藤田, 翼},
+  edition       = {3},
   publisher     = {見本翻訳社},
   date          = {2020},
   origtitle     = {Imaginary Cities and Shared Maps},
@@ -129,7 +130,7 @@ REVIEW_COMPILE='ruby -I /path/to/review/lib /path/to/review/bin/review-compile' 
 }
 ```
 
-`title` は翻訳後の書名、`subtitle` はその副題、`translator` は訳者、`origtitle` は原書名、`origsubtitle` は原書名の副題です。原書の刊行年や出版社が必要な場合は、`origdate` と `origpublisher` を使います。`langid = {japanese}` は、日本語文献として書名を『...』で出すために使います。
+`title` は翻訳後の書名、`subtitle` はその副題、`translator` は訳者、`edition` は版、`origtitle` は原書名、`origsubtitle` は原書名の副題です。原書の刊行年や出版社が必要な場合は、`origdate` と `origpublisher` を使います。`langid = {japanese}` は、日本語文献として書名を『...』で出すために使います。
 
 ## 設定
 

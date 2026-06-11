@@ -137,6 +137,31 @@
     </group>
   </macro>
 
+  <macro name="edition">
+    <choose>
+      <if is-numeric="edition">
+        <group delimiter=" ">
+          <number variable="edition" form="ordinal"/>
+          <text term="edition" form="short"/>
+        </group>
+      </if>
+      <else>
+        <text variable="edition"/>
+      </else>
+    </choose>
+  </macro>
+
+  <macro name="edition-ja">
+    <choose>
+      <if is-numeric="edition">
+        <number variable="edition" prefix="第" suffix="版"/>
+      </if>
+      <else>
+        <text variable="edition"/>
+      </else>
+    </choose>
+  </macro>
+
   <macro name="original-publication">
     <choose>
       <if variable="original-title original-date original-publisher" match="any">
@@ -174,6 +199,7 @@
   <macro name="book-details">
     <group delimiter=". ">
       <text macro="title"/>
+      <text macro="edition"/>
       <text macro="translator" suffix="訳"/>
       <text macro="publisher"/>
       <text macro="original-publication"/>
@@ -188,6 +214,7 @@
             <text macro="author"/>
             <text macro="title"/>
           </group>
+          <text macro="edition-ja"/>
           <text macro="translator" suffix="訳"/>
           <text macro="publisher-ja"/>
         </group>
