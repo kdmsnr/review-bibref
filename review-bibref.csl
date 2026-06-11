@@ -123,6 +123,21 @@
     </choose>
   </macro>
 
+  <macro name="editor-detail">
+    <choose>
+      <if variable="author language" match="all">
+        <names variable="editor">
+          <name initialize="false" name-as-sort-order="all" delimiter="，"/>
+        </names>
+      </if>
+      <else-if variable="author">
+        <names variable="editor">
+          <name initialize="false" and="text" delimiter=", "/>
+        </names>
+      </else-if>
+    </choose>
+  </macro>
+
   <macro name="publisher">
     <group delimiter=", ">
       <text variable="publisher-place"/>
@@ -200,6 +215,7 @@
     <group delimiter=". ">
       <text macro="title"/>
       <text macro="edition"/>
+      <text macro="editor-detail"/>
       <text macro="translator" suffix="訳"/>
       <text macro="publisher"/>
       <text macro="original-publication"/>
@@ -215,6 +231,7 @@
             <text macro="title"/>
           </group>
           <text macro="edition-ja"/>
+          <text macro="editor-detail"/>
           <text macro="translator" suffix="訳"/>
           <text macro="publisher-ja"/>
         </group>

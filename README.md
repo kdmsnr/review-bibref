@@ -118,6 +118,7 @@ REVIEW_COMPILE='ruby -I /path/to/review/lib /path/to/review/bin/review-compile' 
   author        = {Harper, Lio},
   title         = {翻訳された架空の都市論},
   subtitle      = {共有地図の実例},
+  editor        = {例示監訳 and 例示監修},
   translator    = {藤田, 翼},
   edition       = {3},
   publisher     = {見本翻訳社},
@@ -130,7 +131,7 @@ REVIEW_COMPILE='ruby -I /path/to/review/lib /path/to/review/bin/review-compile' 
 }
 ```
 
-`title` は翻訳後の書名、`subtitle` はその副題、`translator` は訳者、`edition` は版、`origtitle` は原書名、`origsubtitle` は原書名の副題です。原書の刊行年や出版社が必要な場合は、`origdate` と `origpublisher` を使います。`langid = {japanese}` は、日本語文献として書名を『...』で出すために使います。
+`title` は翻訳後の書名、`subtitle` はその副題、`editor` は監訳・監修など役割込みの表示文字列、`translator` は訳者、`edition` は版、`origtitle` は原書名、`origsubtitle` は原書名の副題です。原書の刊行年や出版社が必要な場合は、`origdate` と `origpublisher` を使います。`langid = {japanese}` は、日本語文献として書名を『...』で出すために使います。
 
 ## 設定
 

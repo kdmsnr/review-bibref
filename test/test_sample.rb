@@ -52,7 +52,7 @@ class BibLaTeXSampleTest < Minitest::Test
     assert_includes ch02, '<div class="biblatex-list" data-biblist-id="ch02">'
     assert_includes ch02, 'id="biblatex-translation2020ja"'
     assert_includes ch02, '<em>Designing sample books: Practical patterns for examples</em>. 2nd ed.'
-    assert_includes ch02, '『翻訳された架空の都市論: 共有地図の実例』，第3版，藤田翼訳，見本翻訳社'
+    assert_includes ch02, '『翻訳された架空の都市論: 共有地図の実例』，第3版，例示監訳，例示監修，藤田翼訳，見本翻訳社'
     assert_includes ch02, '原著: Imaginary Cities and Shared Maps: A Field Guide, 2016, Fictional Cartography Press'
 
     refs = read_output('refs.html')
@@ -75,7 +75,7 @@ class BibLaTeXSampleTest < Minitest::Test
     assert_includes ch02, '原書名は\\emph{Imaginary Cities and Shared Maps: A Field Guide}'
     assert_includes ch02, '両方なら『翻訳された架空の都市論: 共有地図の実例』，第3版（原題: \\emph{Imaginary Cities and Shared Maps: A Field Guide}）'
     assert_includes ch02, '\\emph{Designing sample books: Practical patterns for examples}. 2nd ed.'
-    assert_includes ch02, '『翻訳された架空の都市論: 共有地図の実例』，第3版，藤田翼訳，見本翻訳社'
+    assert_includes ch02, '『翻訳された架空の都市論: 共有地図の実例』，第3版，例示監訳，例示監修，藤田翼訳，見本翻訳社'
     assert_includes ch02, '原著: Imaginary Cities and Shared Maps: A Field Guide, 2016, Fictional Cartography Press'
   end
 
